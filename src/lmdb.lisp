@@ -6,7 +6,7 @@
 
 (cffi:define-foreign-library liblmdb
   (:darwin (:or "liblmdb.dylib" "liblmdb.1.dylib"))
-  (:unix  (:or "liblmdb.so" "liblmdb.so.0" "liblmdb.so.0.0.0"))
+  (:unix  (:or "liblmdb.so.0.0.0" "liblmdb.so.0" "liblmdb.so"))
   (:win32 "liblmdb.dll")
   (t (:default "liblmdb")))
 

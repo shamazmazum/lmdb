@@ -4,7 +4,7 @@
   :author "Fernando Borretti <eudoxiahp@gmail.com>, James Anderson <james.anderson@setf.de>, Gábor Melis <mega@retes.hu>"
   :maintainer "Gábor Melis <mega@retes.hu>"
   :license "MIT, see COPYING."
-  :version "0.1"
+  :version "1.0"
   :homepage "https://github.com/melisgl/lmdb"
   :bug-tracker "https://github.com/melisgl/lmdb/issues"
   :source-control (:git "https://github.com/melisgl/lmdb.git")
@@ -25,7 +25,7 @@
 
 (asdf:defsystem :lmdb/test
   :licence "MIT, see COPYING."
-  :version "0.1"
+  :version "1.0"
   :depends-on (#:lmdb #:try)
   :components ((:module "test"
                 :serial t

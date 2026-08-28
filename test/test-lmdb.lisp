@@ -800,7 +800,7 @@
         (*print-compactly* nil)
         (*defer-describe* nil))
     (warn-on-tests-not-run ((find-package :lmdb-test))
-      (print (try 'test-all :debug debug :print print :describe describe)))))
-
-#+nil
-(test)
+      (let ((run (try 'test-all :debug debug :print print :describe describe)))
+        (values
+         (typep (verdict run) 'EXPECTED-VERDICT-SUCCESS)
+         run)))))

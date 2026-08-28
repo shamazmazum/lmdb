@@ -384,18 +384,6 @@
           (signals (lmdb-cursor-uninitialized-error)
             (= 0 (cursor-count cur))))))))
 
-(deftest test-commit-and-cursor ()
-  (with-temporary-env (*env*)
-    (let ((db (get-db "db")))
-      (with-txn (:write t)
-        (put db #(1) #(2))
-        (with-cursor (cur db)
-          (cursor-set-key #(1) cur)
-          (is (equalp (cursor-value cur) #(2)))
-          (commit-txn)
-          (signals (lmdb-bad-txn-error)
-            (cursor-value cur)))))))
-
 (deftest test-iteration ()
   (with-temporary-env (*env*)
     (let ((db (get-db "db" :dupsort t)))
@@ -777,9 +765,6 @@
   (test-cursor-create)
   (test-cursor-dup)
   (test-cursor-put-del)
-  ;; FIXME: This test causes memory corruption
-  #+nil
-  (test-commit-and-cursor)
   (test-iteration)
   (test-iteration-with-null-values)
   (test-renew-txn)

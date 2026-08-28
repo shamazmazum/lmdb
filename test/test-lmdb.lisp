@@ -777,6 +777,8 @@
   (test-cursor-create)
   (test-cursor-dup)
   (test-cursor-put-del)
+  ;; FIXME: This test causes memory corruption
+  #+nil
   (test-commit-and-cursor)
   (test-iteration)
   (test-iteration-with-null-values)

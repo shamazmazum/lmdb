@@ -6,7 +6,7 @@
     (signals (lmdb-error) (open-env path)))
   (with-temporary-env (env)
     (signals (lmdb-error) (open-env (env-path env)))
-    (env-statistics env)
+    (signals (lmdb-error) (env-statistics env))
     (env-info env)))
 
 (deftest test-open-env-nested ()

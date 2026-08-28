@@ -6,7 +6,7 @@
 
 (cffi:define-foreign-library liblmdb
   (:darwin (:or "liblmdb.dylib" "liblmdb.1.dylib"))
-  (:unix  (:or "liblmdb.so.0.0.0" "liblmdb.so.0" "liblmdb.so"))
+  (:unix  (:or "liblmdb.so.1.0" "liblmdb.so.1"))
   (:win32 "liblmdb.dll")
   (t (:default "liblmdb")))
 
@@ -398,58 +398,82 @@
 
 (defun lmdb-error (error-code &optional control-string &rest format-args)
   (with-interrupts
-    (error (cond ((eql error-code liblmdb:+keyexist+)
-                  'lmdb-key-exists-error)
-                 ((eql error-code liblmdb:+notfound+)
-                  'lmdb-not-found-error)
-                 ((eql error-code liblmdb:+page-notfound+)
-                  'lmdb-page-not-found-error)
-                 ((eql error-code liblmdb:+corrupted+)
-                  'lmdb-corrupted-error)
-                 ((eql error-code liblmdb:+panic+)
-                  'lmdb-panic-error)
-                 ((eql error-code liblmdb:+version-mismatch+)
-                  'lmdb-version-mismatch-error)
-                 ((eql error-code liblmdb:+invalid+)
-                  'lmdb-invalid-error)
-                 ((eql error-code liblmdb:+map-full+)
-                  'lmdb-map-full-error)
-                 ((eql error-code liblmdb:+dbs-full+)
-                  'lmdb-dbs-full-error)
-                 ((eql error-code liblmdb:+readers-full+)
-                  'lmdb-readers-full-error)
-                 ((eql error-code liblmdb:+tls-full+)
-                  'lmdb-tls-full-error)
-                 ((eql error-code liblmdb:+txn-full+)
-                  'lmdb-txn-full-error)
-                 ((eql error-code liblmdb:+cursor-full+)
-                  'lmdb-cursor-full-error)
-                 ((eql error-code liblmdb:+page-full+)
-                  'lmdb-page-full-error)
-                 ((eql error-code liblmdb:+map-resized+)
-                  'lmdb-map-resized-error)
-                 ((eql error-code liblmdb:+incompatible+)
-                  'lmdb-incompatible-error)
-                 ((eql error-code liblmdb:+bad-rslot+)
-                  'lmdb-bad-rslot-error)
-                 ((eql error-code liblmdb:+bad-txn+)
-                  'lmdb-bad-txn-error)
-                 ((eql error-code liblmdb:+bad-valsize+)
-                  'lmdb-bad-valsize-error)
-                 ((eql error-code liblmdb:+bad-dbi+)
-                  'lmdb-bad-dbi-error)
-                 ;; Conditions introduced by this library.
-                 ((eql error-code +cursor-uninitialized+)
-                  'lmdb-cursor-uninitialized-error)
-                 ((eql error-code +cursor-thread+)
-                  'lmdb-cursor-thread-error)
-                 ((eql error-code +txn-read-only+)
-                  'lmdb-txn-read-only-error)
-                 ((eql error-code +illegal-access-to-parent-txn+)
-                  'lmdb-illegal-access-to-parent-txn-error)
-                 (t 'lmdb-error))
-           :error-code error-code
-           :control-string control-string :format-args format-args)))
+    (error
+     (case error-code
+       (liblmdb:+keyexist+
+        'lmdb-key-exists-error)
+       (liblmdb:+notfound+
+        'lmdb-not-found-error)
+       (liblmdb:+page-notfound+
+        'lmdb-page-not-found-error)
+       (liblmdb:+corrupted+
+        'lmdb-corrupted-error)
+       (liblmdb:+panic+
+        'lmdb-panic-error)
+       (liblmdb:+version-mismatch+
+        'lmdb-version-mismatch-error)
+       (liblmdb:+invalid+
+        'lmdb-invalid-error)
+       (liblmdb:+map-full+
+        'lmdb-map-full-error)
+       (liblmdb:+dbs-full+
+        'lmdb-dbs-full-error)
+       (liblmdb:+readers-full+
+        'lmdb-readers-full-error)
+       (liblmdb:+tls-full+
+        'lmdb-tls-full-error)
+       (liblmdb:+txn-full+
+        'lmdb-txn-full-error)
+       (liblmdb:+cursor-full+
+        'lmdb-cursor-full-error)
+       (liblmdb:+page-full+
+        'lmdb-page-full-error)
+       (liblmdb:+map-resized+
+        'lmdb-map-resized-error)
+       (liblmdb:+incompatible+
+        'lmdb-incompatible-error)
+       (liblmdb:+bad-rslot+
+        'lmdb-bad-rslot-error)
+       (liblmdb:+bad-txn+
+        'lmdb-bad-txn-error)
+       (liblmdb:+bad-valsize+
+        'lmdb-bad-valsize-error)
+       (liblmdb:+bad-dbi+
+        'lmdb-bad-dbi-error)
+       (liblmdb:+problem+
+        'lmdb-problem-error)
+       (liblmdb:+bad-checksum+
+        'lmdb-bad-checksum-error)
+       (liblmdb:+crypto-fail+
+        'lmdb-crypto-fail-error)
+       (liblmdb:+env-encryption+
+        'lmdb-env-encryption-error)
+       (liblmdb:+txn-pending+
+        'lmdb-txn-pending-error)
+       (liblmdb:+cant-rollback+
+        'lmdb-cant-rollback-error)
+       (liblmdb:+dbis-busy+
+        'lmdb-dbis-busy-error)
+       (liblmdb:+short-write+
+        'lmdb-short-write-error)
+       (liblmdb:+env-busy+
+        'lmdb-env-busy-error)
+       (liblmdb:+is-readonly+
+        'lmdb-is-readonly-error)
+       (liblmdb:+addr-busy+
+        'lmdb-addr-busy-error)
+        ;; Conditions introduced by this library.
+       (+cursor-uninitialized+
+        'lmdb-cursor-uninitialized-error)
+       (+cursor-thread+
+        'lmdb-cursor-thread-error)
+       (+txn-read-only+
+        'lmdb-txn-read-only-error)
+       (+illegal-access-to-parent-txn+
+        'lmdb-illegal-access-to-parent-txn-error)
+       (t 'lmdb-error))
+     :error-code error-code
+     :control-string control-string :format-args format-args)))
 
 (defsection @lmdb/error-code-conditions
     (:title "Conditions for C lmdb error codes")
@@ -473,7 +497,18 @@
   (lmdb-bad-rslot-error condition)
   (lmdb-bad-txn-error condition)
   (lmdb-bad-valsize-error condition)
-  (lmdb-bad-dbi-error condition))
+  (lmdb-bad-dbi-error condition)
+  (lmdb-problem-error condition)
+  (lmdb-bad-checksum-error condition)
+  (lmdb-crypto-fail-error condition)
+  (lmdb-env-encryption-error condition)
+  (lmdb-txn-pending-error condition)
+  (lmdb-cant-rollback-error condition)
+  (lmdb-dbis-busy-error condition)
+  (lmdb-short-write-error condition)
+  (lmdb-env-busy-error condition)
+  (lmdb-is-readonly-error condition)
+  (lmdb-addr-busy-error condition))
 
 (define-condition lmdb-key-exists-error (lmdb-error)
   ()
@@ -577,6 +612,50 @@
 (define-condition lmdb-bad-dbi-error (lmdb-error)
   ()
   (:documentation "The specified DBI was changed unexpectedly."))
+
+(define-condition lmdb-problem-error (lmdb-error)
+  ()
+  (:documentation "Unexpected problem - txn should abort"))
+
+(define-condition lmdb-bad-checksum-error (lmdb-error)
+  ()
+  (:documentation "Page checksum incorrect"))
+
+(define-condition lmdb-crypto-fail-error (lmdb-error)
+  ()
+  (:documentation "Encryption/decryption failed"))
+
+(define-condition lmdb-env-encryption-error (lmdb-error)
+  ()
+  (:documentation "Environment encryption mismatch"))
+
+(define-condition lmdb-txn-pending-error (lmdb-error)
+  ()
+  (:documentation "Transaction was already prepared"))
+
+(define-condition lmdb-cant-rollback-error (lmdb-error)
+  ()
+  (:documentation "Environment can't rollback the last transaction"))
+
+(define-condition lmdb-dbis-busy-error (lmdb-error)
+  ()
+  (:documentation "Can't drop main DBI while other DBIs are open"))
+
+(define-condition lmdb-short-write-error (lmdb-error)
+  ()
+  (:documentation "Write was incomplete"))
+
+(define-condition lmdb-env-busy-error (lmdb-error)
+  ()
+  (:documentation "Env is busy, can't use previous snapshot"))
+
+(define-condition lmdb-is-readonly-error (lmdb-error)
+  ()
+  (:documentation "Env or txn is read-only, can't write"))
+
+(define-condition lmdb-addr-busy-error (lmdb-error)
+  ()
+  (:documentation "Requested map address is unavailable"))
 
 (defsection @lmdb/additional-conditions (:title "Additional conditions")
   "The following conditions do not have a dedicated C lmdb error

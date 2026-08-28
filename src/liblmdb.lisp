@@ -55,9 +55,9 @@
 
 (defctype size-t  :size)
 
-(defconstant #.(lispify "MDB_VERSION_MAJOR" 'constant) 0)
-(defconstant #.(lispify "MDB_VERSION_MINOR" 'constant) 9)
-(defconstant #.(lispify "MDB_VERSION_PATCH" 'constant) 26)
+(defconstant #.(lispify "MDB_VERSION_MAJOR" 'constant) 1)
+(defconstant #.(lispify "MDB_VERSION_MINOR" 'constant) 0)
+(defconstant #.(lispify "MDB_VERSION_PATCH" 'constant) 0)
 
 (defconstant #.(lispify "MDB_FIXEDMAP" 'constant) #x01)
 (defconstant #.(lispify "MDB_NOSUBDIR" 'constant) #x4000)
@@ -131,7 +131,18 @@
 (defconstant #.(lispify "MDB_BAD_TXN" 'constant) -30782)
 (defconstant #.(lispify "MDB_BAD_VALSIZE" 'constant) -30781)
 (defconstant #.(lispify "MDB_BAD_DBI" 'constant) -30780)
-(defconstant #.(lispify "MDB_LAST_ERRCODE" 'constant) -30780)
+(defconstant #.(lispify "MDB_PROBLEM" 'constant) -30779)
+(defconstant #.(lispify "MDB_BAD_CHECKSUM" 'constant) -30778)
+(defconstant #.(lispify "MDB_CRYPTO_FAIL" 'constant) -30777)
+(defconstant #.(lispify "MDB_ENV_ENCRYPTION" 'constant) -30776)
+(defconstant #.(lispify "MDB_TXN_PENDING" 'constant) -30775)
+(defconstant #.(lispify "MDB_CANT_ROLLBACK" 'constant) -30774)
+(defconstant #.(lispify "MDB_DBIS_BUSY" 'constant) -30773)
+(defconstant #.(lispify "MDB_SHORT_WRITE" 'constant) -30772)
+(defconstant #.(lispify "MDB_ENV_BUSY" 'constant) -30771)
+(defconstant #.(lispify "MDB_IS_READONLY" 'constant) -30770)
+(defconstant #.(lispify "MDB_ADDR_BUSY" 'constant) -30769)
+(defconstant #.(lispify "MDB_LAST_ERRCODE" 'constant) -30769)
 
 (defcstruct #.(lispify "MDB_val" 'classname)
 	         (#.(lispify "mv_size" 'slotname) size-t)

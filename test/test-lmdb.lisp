@@ -134,7 +134,7 @@
                 (with-txn ()
                   (when (not dupsort)
                     (is (= 1 (txn-id))))
-                  (signals (lmdb-txn-read-only-error)
+                  (signals (lmdb-is-readonly-error)
                     (put db (e 1) (e 2))))
                 (with-txn (:write t)
                   (when (not dupsort)

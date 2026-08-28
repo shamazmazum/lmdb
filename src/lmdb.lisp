@@ -361,7 +361,6 @@
 ;;; C lmdb uses -30600 to -30799. We use -30599 and up.
 (defparameter +cursor-uninitialized+ -30599)
 (defparameter +cursor-thread+ -30598)
-(defparameter +txn-read-only+ -30597)
 (defparameter +illegal-access-to-parent-txn+ -30596)
 
 (defun strerror (error-code)
@@ -369,7 +368,6 @@
     (+cursor-uninitialized+ "Cursor is not initialized.")
     (+cursor-thread+ (format nil "Cursor was accessed from a thread other ~
                                  than the one in which it was created."))
-    (+txn-read-only+ "Attempt to write in a read-only transaction.")
     (+illegal-access-to-parent-txn+ "Illegal access to parent transaction.")
     (t (liblmdb:strerror error-code))))
 
@@ -399,7 +397,7 @@
 (defun lmdb-error (error-code &optional control-string &rest format-args)
   (with-interrupts
     (error
-     (case error-code
+     (alexandria:switch (error-code)
        (liblmdb:+keyexist+
         'lmdb-key-exists-error)
        (liblmdb:+notfound+
@@ -467,8 +465,6 @@
         'lmdb-cursor-uninitialized-error)
        (+cursor-thread+
         'lmdb-cursor-thread-error)
-       (+txn-read-only+
-        'lmdb-txn-read-only-error)
        (+illegal-access-to-parent-txn+
         'lmdb-illegal-access-to-parent-txn-error)
        (t 'lmdb-error))
@@ -662,7 +658,6 @@
   code."
   (lmdb-cursor-uninitialized-error condition)
   (lmdb-cursor-thread-error condition)
-  (lmdb-txn-read-only-error condition)
   (lmdb-illegal-access-to-parent-txn-error condition))
 
 (define-condition lmdb-cursor-uninitialized-error (lmdb-error)
@@ -679,12 +674,6 @@
   lifetime is tied to the dynamic extent of its WITH-CURSOR, this
   might mean accessing garbage in foreign memory with unpredictable
   consequences."))
-
-(define-condition lmdb-txn-read-only-error (lmdb-error)
-  ()
-  (:documentation "Attempt was made to write in a read-only
-  transaction. Signalled when some functions return the C error code
-  `EACCESS`."))
 
 (define-condition lmdb-illegal-access-to-parent-txn-error (lmdb-error)
   ()
@@ -2589,7 +2578,7 @@
     LMDB-KEY-EXISTS-ERROR return NIL.
 
   May signal LMDB-MAP-FULL-ERROR, LMDB-TXN-FULL-ERROR,
-  LMDB-TXN-READ-ONLY-ERROR.
+  LMDB-IS-READONLY-ERROR.
 
   Wraps [mdb_put()](http://www.lmdb.tech/doc/group__mdb.html#ga4fa8573d9236d54687c61827ebf8cac0)."
   (without-interrupts
@@ -2604,7 +2593,6 @@
                               (if append-dup liblmdb:+appenddup+ 0)))))
           (alexandria:switch (return-code)
             (0 t)
-            (+eacces+ (lmdb-error +txn-read-only+))
             (liblmdb:+keyexist+ (if key-exists-error-p
                                     (lmdb-error return-code)
                                     nil))
@@ -2615,14 +2603,13 @@
   If DB supports sorted duplicates (@DUPSORT), then VALUE is taken
   into account: if it's NIL, then all duplicate values for KEY are
   deleted, if it's not NIL, then only the matching value. May signal
-  LMDB-TXN-READ-ONLY-ERROR.
+  LMDB-IS-READONLY-ERROR.
 
   Wraps [mdb_del()](http://www.lmdb.tech/doc/group__mdb.html#gab8182f9360ea69ac0afd4a4eaab1ddb0)."
   (flet ((handle-return-code (return-code)
            (alexandria:switch (return-code)
              (0 t)
              (liblmdb:+notfound+ nil)
-             (+eacces+ (lmdb-error +txn-read-only+))
              (t (lmdb-error return-code)))))
     (without-interrupts
       (if (null value)
@@ -3202,7 +3189,7 @@
     signalled.
 
   May signal LMDB-MAP-FULL-ERROR, LMDB-TXN-FULL-ERROR,
-  LMDB-TXN-READ-ONLY-ERROR.
+  LMDB-IS-READONLY-ERROR.
 
   Wraps [mdb_cursor_put()](http://www.lmdb.tech/doc/group__mdb.html#ga1f83ccb40011837ff37cc32be01ad91e)."
   (let ((cursor (or cursor *default-cursor*)))
@@ -3220,7 +3207,6 @@
                                (if append-dup liblmdb:+appenddup+ 0)))))
             (alexandria:switch (return-code)
               (0 value)
-              (+eacces+ (lmdb-error +txn-read-only+))
               (t (lmdb-error return-code)))))))))
 
 (defun cursor-del (cursor &key delete-dups)
@@ -3236,7 +3222,7 @@
   LMDB-INCOMPATIBLE-ERROR is signalled.
 
   May signal LMDB-CURSOR-UNINITIALIZED-ERROR,
-  LMDB-TXN-READ-ONLY-ERROR.
+  LMDB-IS-READONLY-ERROR.
 
   Wraps [mdb_cursor_del()](http://www.lmdb.tech/doc/group__mdb.html#ga26a52d3efcfd72e5bf6bd6960bf75f95)."
   (let ((cursor (or cursor *default-cursor*)))
@@ -3248,7 +3234,6 @@
         (alexandria:switch (return-code)
           (0 (values))
           (+einval+ (lmdb-error +cursor-uninitialized+))
-          (+eacces+ (lmdb-error +txn-read-only+))
           (liblmdb:+incompatible+
            (lmdb-error return-code "DB does not have DUPSORT."))
           (t (lmdb-error return-code)))))))

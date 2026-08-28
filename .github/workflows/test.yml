@@ -1,30 +1,40 @@
-name: Test
-on:
-  - push
+name: CI tests
+
+on: [push, pull_request]
 
 jobs:
-  build:
-    strategy:
-      fail-fast: true
+  tests:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: Install SBCL
-        run: sudo apt-get update && sudo apt-get install sbcl
-
+        uses: actions/checkout@v7
+      - name: Checkout LMDB
+        uses: actions/checkout@v7
+        with:
+          repository: LMDB/lmdb
+          path: lmdb
+          ref: LMDB_1.0.1
       - name: Install dependencies
-        run: sudo apt-get install liblmdb0 liblmdb-dev
-
-      - name: Download Quicklisp
-        run: curl -O https://beta.quicklisp.org/quicklisp.lisp
-
-      - name: Install Quicklisp
-        run: sbcl  --noinform --non-interactive --load quicklisp.lisp --eval '(quicklisp-quickstart:install)' --eval '(ql-util:without-prompting (ql:add-to-init-file))' --quit
-
-      - name: Let ASDF find the project
-        run: mkdir ~/common-lisp; ln -s `pwd` ~/common-lisp/lmdb
-
+        run: |
+          sudo apt update
+          sudo apt install build-essential
+      - name: Build LMDB
+        run: |
+          cd $GITHUB_WORKSPACE/lmdb/libraries/liblmdb
+          make
+          sudo make install
+      - name: Install roswell
+        run: |
+          curl -L https://raw.githubusercontent.com/roswell/roswell/master/scripts/install-for-ci.sh | sh
+      - name: Install qlot
+        run: |
+          ros install qlot
+      - name: Set Path
+        run: |
+          echo "${HOME}/.roswell/bin" >> $GITHUB_PATH
       - name: Run tests
-        run: sbcl --noinform --non-interactive --eval "(ql:quickload :lmdb/test)" --eval "(lmdb/test:test)" --quit
+        run: |
+          cd $GITHUB_WORKSPACE
+          export LD_LIBRARY_PATH=/usr/local/lib
+          qlot install
+          qlot exec ros -l test/ci.lisp
